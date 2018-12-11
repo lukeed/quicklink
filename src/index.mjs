@@ -15,45 +15,19 @@
 **/
 
 import prefetch from './prefetch.mjs';
-import requestIdleCallback from './request-idle-callback.mjs';
+// import requestIdleCallback from './request-idle-callback.mjs';
 
-const toPrefetch = new Set();
-
-const observer = new IntersectionObserver(entries => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const link = entry.target;
-      if (toPrefetch.has(link.href)) {
-        observer.unobserve(link);
-        prefetcher(link.href);
+function toQuery(parent, priority) {
+  return function () {
+    Array.from(parent.querySelectorAll('a'), link => {
+      if (link._seen) return;
+      let rect = link.getBoundingClientRect();
+      // Prefetch if link is _partially_ visible
+      if (rect.top < window.innerHeight && rect.bottom >= 0) {
+        link._seen = !!prefetch(link.href, priority);
       }
-    }
-  });
-});
-
-/**
- * Prefetch a supplied URL. This will also remove
- * the URL from the toPrefetch Set.
- * @param {String} url - URL to prefetch
- */
-function prefetcher(url) {
-  toPrefetch.delete(url);
-  prefetch(new URL(url, location.href).toString(), observer.priority);
-}
-
-/**
- * Determine if the anchor tag should be prefetched.
- * A filter can be a RegExp, Function, or Array of both.
- *   - Function receives `node.href, node` arguments
- *   - RegExp receives `node.href` only (the full URL)
- * @param  {Element}  node    The anchor (<a>) tag.
- * @param  {Mixed}    filter  The custom filter(s)
- * @return {Boolean}          If true, then it should be ignored
- */
-function isIgnored(node, filter) {
-  return Array.isArray(filter)
-    ? filter.some(x => isIgnored(node, x))
-    : (filter.test || filter).call(filter, node.href, node);
+    });
+  };
 }
 
 /**
@@ -79,26 +53,13 @@ export default function (options) {
     el: document,
   }, options);
 
-  observer.priority = options.priority;
-
-  const allowed = options.origins || [location.hostname];
-  const ignores = options.ignores || [];
-
-  options.timeoutFn(() => {
-    // If URLs are given, prefetch them.
-    if (options.urls) {
-      options.urls.forEach(prefetcher);
-    } else {
-      // If not, find all links and use IntersectionObserver.
-      Array.from(options.el.querySelectorAll('a'), link => {
-        observer.observe(link);
-        // If the anchor matches a permitted origin
-        // ~> A `[]` or `true` means everything is allowed
-        if (!allowed.length || allowed.includes(link.hostname)) {
-          // If there are any filters, the link must not match any of them
-          isIgnored(link, ignores) || toPrefetch.add(link.href);
-        }
-      });
-    }
-  }, {timeout: options.timeout});
+  if (options.urls) {
+    options.urls.forEach(url => {
+      prefetch(url, options.priority);
+    });
+  } else {
+    const prefetcher = toQuery(options.el, options.priority);
+    addEventListener('scroll', prefetcher, { passive: true });
+    prefetcher(); // initial visible set
+  }
 }
