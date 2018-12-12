@@ -40,25 +40,16 @@ function toQuery(parent, priority) {
  * @param {Array} options.urls - Array of URLs to prefetch (override)
  * @param {Object} options.el - DOM element to prefetch in-viewport links of
  * @param {Boolean} options.priority - Attempt higher priority fetch (low or high)
- * @param {Array} options.origins - Allowed origins to prefetch (empty allows all)
- * @param {Array|RegExp|Function} options.ignores - Custom filter(s) that run after origin checks
- * @param {Number} options.timeout - Timeout after which prefetching will occur
- * @param {Function} options.timeoutFn - Custom timeout function
  */
 export default function (options) {
-  options = Object.assign({
-    timeout: 2e3,
-    priority: false,
-    timeoutFn: requestIdleCallback,
-    el: document,
-  }, options);
+  options = options || {};
 
   if (options.urls) {
     options.urls.forEach(url => {
       prefetch(url, options.priority);
     });
   } else {
-    const prefetcher = toQuery(options.el, options.priority);
+    const prefetcher = toQuery(options.el || document, !!options.priority);
     addEventListener('scroll', prefetcher, { passive: true });
     prefetcher(); // initial visible set
   }
