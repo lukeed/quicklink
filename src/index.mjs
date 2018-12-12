@@ -15,7 +15,6 @@
 **/
 
 import prefetch from './prefetch.mjs';
-// import requestIdleCallback from './request-idle-callback.mjs';
 
 function toQuery(parent, priority) {
   return function () {
@@ -37,20 +36,14 @@ function toQuery(parent, priority) {
  * links for `document`. Can also work off a supplied
  * DOM element or static array of URLs.
  * @param {Object} options - Configuration options for quicklink
- * @param {Array} options.urls - Array of URLs to prefetch (override)
  * @param {Object} options.el - DOM element to prefetch in-viewport links of
  * @param {Boolean} options.priority - Attempt higher priority fetch (low or high)
  */
-export default function (options) {
+export function listen(options) {
   options = options || {};
-
-  if (options.urls) {
-    options.urls.forEach(url => {
-      prefetch(url, options.priority);
-    });
-  } else {
-    const prefetcher = toQuery(options.el || document, !!options.priority);
-    addEventListener('scroll', prefetcher, { passive: true });
-    prefetcher(); // initial visible set
-  }
+  const toCheck = toQuery(options.el || document, options.priority);
+  addEventListener('scroll', toCheck, { passive:true });
+  toCheck(); // initial visible set
 }
+
+export { prefetch }

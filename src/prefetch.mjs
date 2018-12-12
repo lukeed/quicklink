@@ -96,7 +96,7 @@ const supportedPrefetchStrategy = support('prefetch')
  * @param {Object} conn - navigator.connection (internal)
  * @return {Object} a Promise
  */
-function prefetcher(url, isPriority, conn) {
+export default function (url, isPriority) {
   if (preFetched[url]) {
     return;
   }
@@ -110,6 +110,4 @@ function prefetcher(url, isPriority, conn) {
   return (isPriority ? highPriFetchStrategy : supportedPrefetchStrategy)(url).then(() => {
     preFetched[url] = true;
   });
-};
-
-export default prefetcher;
+}
