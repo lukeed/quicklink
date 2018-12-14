@@ -16,14 +16,17 @@
 
 import prefetch from './prefetch.mjs';
 
-function toQuery(options) {
+function toQuery(options, origins) {
   return function () {
     Array.from((options.el || document).querySelectorAll('a'), link => {
-      if (link._seen) return;
+      if (link._ran) return;
       let rect = link.getBoundingClientRect();
       // Prefetch if link is _partially_ visible
       if (rect.top < window.innerHeight && rect.bottom >= 0) {
-        link._seen = !!prefetch(link.href, options.priority);
+        link._ran = true;
+        if (!origins.length || origins.includes(link.hostname)) {
+          prefetch(link.href, options.priority);
+        }
       }
     });
   };
@@ -38,10 +41,11 @@ function toQuery(options) {
  * @param {Object} options - Configuration options for quicklink
  * @param {Object} options.el - DOM element to prefetch in-viewport links of
  * @param {Boolean} options.priority - Attempt higher priority fetch (low or high)
+ * @param {Array} options.origins - The allowed origins; pass `true` or `[]` for all
  */
 export function listen(options) {
   options = options || {};
-  const toCheck = toQuery(options);
+  const toCheck = toQuery(options, options.origins || [location.hostname]);
   addEventListener('scroll', toCheck, { passive:true });
   toCheck(); // initial visible set
 }
