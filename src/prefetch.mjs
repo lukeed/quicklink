@@ -16,7 +16,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 **/
-const preFetched = {};
 
 /**
  * Checks if a feature on `link` is natively supported.
@@ -97,9 +96,6 @@ const supportedPrefetchStrategy = document !== void 0 && supports('prefetch')
  * @return {Object} a Promise
  */
 export default function (url, isPriority) {
-  if (preFetched[url]) {
-    return;
-  }
 
   if (conn = navigator.connection) {
     // Don't prefetch if the user is on 2G. or if Save-Data is enabled..
@@ -107,7 +103,5 @@ export default function (url, isPriority) {
   }
 
   // Wanna do something on catch()?
-  return (isPriority ? highPriFetchStrategy : supportedPrefetchStrategy)(url).then(() => {
-    preFetched[url] = true;
-  });
+  return (isPriority ? highPriFetchStrategy : supportedPrefetchStrategy)(url);
 }
