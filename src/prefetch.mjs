@@ -24,7 +24,7 @@ const preFetched = {};
  * @param {string} feature - name of the feature to test
  * @return {Boolean} whether the feature is supported
  */
-function support(feature) {
+function supports(feature) {
   const link = document.createElement('link');
   return (link.relList || {}).supports && link.relList.supports(feature);
 }
@@ -85,7 +85,7 @@ function highPriFetchStrategy(url) {
     : fetch(url, {credentials: `include`});
 }
 
-const supportedPrefetchStrategy = support('prefetch')
+const supportedPrefetchStrategy = document !== void 0 && supports('prefetch')
   ? linkPrefetchStrategy
   : xhrPrefetchStrategy;
 
