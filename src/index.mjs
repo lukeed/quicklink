@@ -16,14 +16,14 @@
 
 import prefetch from './prefetch.mjs';
 
-function toQuery(parent, priority) {
+function toQuery(options) {
   return function () {
-    Array.from(parent.querySelectorAll('a'), link => {
+    Array.from((options.el || document).querySelectorAll('a'), link => {
       if (link._seen) return;
       let rect = link.getBoundingClientRect();
       // Prefetch if link is _partially_ visible
       if (rect.top < window.innerHeight && rect.bottom >= 0) {
-        link._seen = !!prefetch(link.href, priority);
+        link._seen = !!prefetch(link.href, options.priority);
       }
     });
   };
@@ -41,7 +41,7 @@ function toQuery(parent, priority) {
  */
 export function listen(options) {
   options = options || {};
-  const toCheck = toQuery(options.el || document, options.priority);
+  const toCheck = toQuery(options);
   addEventListener('scroll', toCheck, { passive:true });
   toCheck(); // initial visible set
 }
