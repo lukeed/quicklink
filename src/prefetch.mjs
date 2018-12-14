@@ -35,17 +35,17 @@ function support(feature) {
  * @return {Object} a Promise
  */
 function linkPrefetchStrategy(url) {
-  return new Promise((resolve, reject) => {
+  return new Promise((res, rej) => {
     const link = document.createElement(`link`);
     link.rel = `prefetch`;
     link.href = url;
 
-    link.onload = resolve;
-    link.onerror = reject;
+    link.onload = res;
+    link.onerror = rej;
 
     document.head.appendChild(link);
   });
-};
+}
 
 /**
  * Fetches a given URL using XMLHttpRequest
