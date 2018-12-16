@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Infinite Scroll</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://polyfill.io/v2/polyfill.min.js?features=IntersectionObserver"></script>
+  <style>
+    p {
+      line-height: 1.4;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <script src="../dist/quicklink.umd.js"></script>
+  <script>
+    var count = 0;
+
+    function h(tagName, attrs, children) {
+      var k, y, i=0, x=document.createElement(tagName);
+      children = [].concat(children || []);
+      for (k in attrs) x[k] = attrs[k];
+      for (; i < children.length;) {
+        y = children[i++];
+        x.appendChild(y.nodeName ? y : document.createTextNode(''+y));
+      }
+      return x;
+    }
+
+    function paragraph() {
+      count++;
+      document.body.appendChild(
+        h('p', null, [
+          'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Hic numquam aperiam laudantium voluptates modi eaque nemo fuga sequi iste, vero totam dolore ipsa porro nostrum asperiores beatae, iure cumque laborum.',
+          h('a', { href: `basic.html?now=${count}` }, `Link #${count}`),
+          'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Hic numquam aperiam laudantium voluptates modi eaque nemo fuga sequi iste, vero totam dolore ipsa porro nostrum asperiores beatae, iure cumque laborum.',
+        ])
+      );
+    }
+
+    var wh = window.innerHeight;
+    var doc = document.documentElement;
+    var zone = 200; // trigger point
+
+    function onscroll() {
+      // Add 12 new paragraphs if within 200px of bottom
+      if (doc.scrollHeight - wh - window.scrollY <= zone) {
+        Array.from({ length:12 }, paragraph);
+      }
+    }
+
+    // listen for near-bottom
+    addEventListener('DOMContentLoaded', onscroll);
+    addEventListener('scroll', onscroll, { passive:true });
+
+    // init
+    quicklink();
+  </script>
+</body>
+</html>
+
