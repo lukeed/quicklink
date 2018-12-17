@@ -16,7 +16,23 @@
 
 import prefetch from './prefetch.mjs';
 
-function toQuery(options, origins) {
+/**
+ * Determine if the anchor tag should be prefetched.
+ * A filter can be a RegExp, Function, or Array of both.
+ *   - Function receives `node.href, node` arguments
+ *   - RegExp receives `node.href` only (the full URL)
+ * @param  {Element}  node    The anchor (<a>) tag.
+ * @param  {Mixed}    filter  The custom filter(s)
+ * @return {Boolean}          If true, then it should be ignored
+ */
+function isIgnored(node, filter) {
+  return Array.isArray(filter)
+    ? filter.some(x => isIgnored(node, x))
+    : (filter.test || filter).call(filter, node.href, node);
+}
+
+function toQuery(options) {
+  const origins = options.origins || [location.hostname];
   return function () {
     Array.from((options.el || document).querySelectorAll('a'), link => {
       if (link._ran) return;
@@ -25,7 +41,8 @@ function toQuery(options, origins) {
       if (rect.top < window.innerHeight && rect.bottom >= 0) {
         link._ran = true;
         if (!origins.length || origins.includes(link.hostname)) {
-          prefetch(link.href, options.priority);
+          // If there are any filters, the link must not match any of them
+          isIgnored(link, options.ignores || []) || prefetch(link.href, options.priority);
         }
       }
     });
@@ -42,10 +59,10 @@ function toQuery(options, origins) {
  * @param {Object} options.el - DOM element to prefetch in-viewport links of
  * @param {Boolean} options.priority - Attempt higher priority fetch (low or high)
  * @param {Array} options.origins - The allowed origins; pass `true` or `[]` for all
+ * @param {Array|RegExp|Function} options.ignores - Custom filter(s) that run after origin checks
  */
 export function listen(options) {
-  options = options || {};
-  const toCheck = toQuery(options, options.origins || [location.hostname]);
+  const toCheck = toQuery(options || {});
   addEventListener('scroll', toCheck, { passive:true });
   toCheck(); // initial visible set
 }
