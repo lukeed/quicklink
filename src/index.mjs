@@ -60,11 +60,13 @@ function toQuery(options) {
  * @param {Boolean} options.priority - Attempt higher priority fetch (low or high)
  * @param {Array} options.origins - The allowed origins; pass `true` or `[]` for all
  * @param {Array|RegExp|Function} options.ignores - Custom filter(s) that run after origin checks
+ * @return {Function} Returns the `unlisten` function to remove the "scroll" event listener
  */
 export function listen(options) {
   const toCheck = toQuery(options || {});
   addEventListener('scroll', toCheck, { passive:true });
   toCheck(); // initial visible set
+  return () => removeEventListener('scroll', toCheck);
 }
 
 export { prefetch }
