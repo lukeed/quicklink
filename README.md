@@ -44,7 +44,7 @@ Quickstart:
 <script src="dist/quicklink.js"></script>
 <!-- Initialize (you can do this whenever you want) -->
 <script>
-quicklink();
+quicklink.listen();
 </script>
 ```
 
@@ -53,7 +53,7 @@ For example, you can initialize after the `load` event fires:
 ```html
 <script>
 window.addEventListener('load', () =>{
-   quicklink();
+   quicklink.listen();
 });
 </script>
 ```
@@ -61,15 +61,18 @@ window.addEventListener('load', () =>{
 ES Module import:
 
 ```js
-import quicklink from "dist/quicklink.mjs";
-quicklink();
+import { listen, prefetch } from "dist/quicklink.mjs";
+listen({
+  origins: true,
+  el: document.querySelector('#app')
+});
 ```
 
 The above options are best for multi-page sites. Single-page apps have a few options available for using quicklink with a router:
 
-* Call `quicklink()` once a navigation to a new route has completed
-* Call `quicklink()` against a specific DOM element / component
-* Call `quicklink({urls:[...]})` with a custom set of URLs to prefetch
+* Call `quicklink.listen()` once a navigation to a new route has completed
+* Call `quicklink.listen()` against a specific DOM element / component
+* Call `quicklink.prefetch({ urls })` with a custom set of URLs to prefetch
 
 ## API
 
